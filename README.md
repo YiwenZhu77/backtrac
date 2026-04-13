@@ -8,15 +8,19 @@ Uses the RCM effective potential V_eff = V + lambda * V_M for bounce-averaged dr
 
 ## Pilot Data
 
-Download the pilot dataset to skip the conversion step and run directly:
+Pilot data is on NCAR Derecho/Casper (accessible to group members):
 
-| File | Size | Link |
-|------|------|------|
-| `sp13_075_rcm_mage.h5` | ~1.5 GB | [Google Drive](https://drive.google.com/open?id=10OcF9w-pN-ixWu2BB4dhRoczIclr7yDC) |
-| `sina_1k_traj.npy` | ~4 MB | [Google Drive](https://drive.google.com/open?id=1zxrYT1rnTwU94nrnstlEux_e2agmKtd8) |
-| `sp13_1k_indices.npy` | ~8 KB | [Google Drive](https://drive.google.com/open?id=1daEIbxki6POZnoREXVS5SY9vPVx6eWsN) |
+```
+/glade/derecho/scratch/yizhu/backtrac_pilot/
+  sp13_075_rcm_mage.h5      # Converted RCM fields (V, VM, COLAT, ALOCT, XMIN, YMIN)
+  sina_1k_traj.npy           # Pre-computed trajectories (241 × 1000 × 2)
+  sp13_1k_indices.npy        # 1000-particle subset indices
 
-Place files in a `data/` directory, then update paths in `configs/sp13_075.yaml`.
+MAGE simulation (S. Bao):
+  /glade/derecho/scratch/sbao/sp13_075/
+```
+
+Update paths in `configs/sp13_075.yaml` before running.
 
 ## Install
 
