@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.npy
+*.h5
+*.h5part
+*.mp4
+*.png
+*.pdf
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+repl_out/
+frames*/
+BT_postprocess_out/

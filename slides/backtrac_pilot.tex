@@ -1,0 +1,281 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{default}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+
+\definecolor{deepblue}{HTML}{1B3A5C}
+\definecolor{lightgray}{HTML}{F5F5F5}
+\setbeamercolor{frametitle}{fg=deepblue}
+\setbeamercolor{title}{fg=deepblue}
+\setbeamercolor{structure}{fg=deepblue}
+\setbeamercolor{block title}{fg=white,bg=deepblue}
+\setbeamercolor{block body}{bg=lightgray}
+
+\usefonttheme{professionalfonts}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{title}{size=\Large,series=\bfseries}
+
+\setbeamertemplate{headline}{%
+  \leavevmode\hbox{\color{deepblue}\rule{\paperwidth}{1.5pt}}%
+}
+\setbeamertemplate{footline}{%
+  \leavevmode\hbox to \paperwidth{%
+    \color{deepblue}\rule{\paperwidth}{0.5pt}}%
+  \vskip-1pt%
+  \hbox to \paperwidth{\hfill\tiny\insertframenumber/\inserttotalframenumber\hspace{4pt}\vspace{2pt}}%
+}
+
+\usepackage{graphicx,booktabs,amsmath}
+
+\title{Backward Test Particle Tracing in MAGE\\[4pt]
+{\normalsize Pilot: St.\ Patrick's Day 2013 Storm}}
+\author{Y.\ Zhu \and S.\ Bao \and S.\ Sadeghzadeh \and F.\ Toffoletto}
+\institute{Rice University}
+\date{}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+% ============ Motivation ============
+\begin{frame}{Motivation and Method}
+
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\textbf{Question}: What fraction of RC H$^+$ comes from bubbles?
+
+\vspace{4pt}
+\footnotesize
+\begin{tabular}{@{}p{2.0cm}p{4.2cm}@{}}
+\toprule
+\textbf{Study} & \textbf{Finding} \\
+\midrule
+Sciola 2023 & $\geq$50\% RC energy from bubbles (enthalpy flux at 6\,R$_E$) \\
+Yang 2015 & $\sim$60\% pressure from bubbles (RCM-E trace at 15\,R$_E$) \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\normalsize
+\textbf{Our approach}: CHIMP full-orbit backward trace in GAMERA fields. Advantage over RCM: traces through bubble interiors with full Lorentz force.
+\end{column}
+\begin{column}{0.45\textwidth}
+\footnotesize
+\textbf{Pilot setup (same event as Sciola):}
+\begin{itemize}
+\item GAMERA-RCM, 17 March 2013 storm
+\item 10{,}000 H$^+$, 10--200\,keV
+\item Uniform in $r_\text{eq}=4.2$--6.6\,R$_E$
+\item $\eta$ weights from RCM for analysis
+\item Backward 4\,h: 10:00$\to$06:00\,UT
+\item Fixed $\Delta t=0.01$\,s (Boris pusher)
+\end{itemize}
+\vspace{2pt}
+\textbf{Bubble ID (Sciola):}\\
+$\Delta B_\tau > 10$\,nT and $V_r<0$ on GAMERA equatorial plane arc, $\tau=2$\,min
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ 4 Solvers ============
+\begin{frame}{Solver Comparison: 4 Backward Trace Modes}
+
+\centering
+\includegraphics[width=0.78\textwidth]{figures/4panel_snapshot_t30.png}
+
+\vspace{2pt}
+\footnotesize
+08:00\,UT snapshot. Background: GAMERA $\Delta B_z$. Four solver modes:
+
+\vspace{2pt}
+\begin{tabular}{@{}llp{7.5cm}@{}}
+\toprule
+\textbf{Panel} & \textbf{Mode} & \textbf{Physics} \\
+\midrule
+Top-left & Full Orbit (FO) & Boris pusher, full Lorentz force everywhere \\
+Top-right & RCM + Frozen & Bounce-avg drift (ExB+gc) inside RCM domain; ExB only outside \\
+Bottom-left & FO + Frozen & Full orbit inside RCM domain; ExB only outside \\
+Bottom-right & H$^-$ (charge reversal) & Same as FO but reversed charge: grad-curv drift eastward \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}
+\textit{(See video attachments for full time evolution)}
+\end{frame}
+
+% ============ Bubble fraction ============
+\begin{frame}{Results: RC Population Breakdown}
+
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+\footnotesize
+\textbf{RC population at three boundaries:}
+\vspace{2pt}
+
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+ & 6\,R$_E$ & 15\,R$_E$ & 25\,R$_E$ \\
+\midrule
+Pre-existing & 30\% & 44\% & 46\% \\
+Bubble & 3\% & 10\% & 7\% \\
+Convection & 67\% & 46\% & 47\% \\
+\midrule
+\textbf{Bub+Pre} & \textbf{33\%} & \textbf{54\%} & \textbf{53\%} \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\normalsize
+Bubble + pre-existing converges to $\sim$54\% at 15--25\,R$_E$, consistent with Sciola ($\geq$50\%) and Yang ($\sim$60\%).
+
+\vspace{4pt}
+\footnotesize
+At 25\,R$_E$, particles interact with BBFs in the mid-tail --- a region only accessible via full-orbit tracing in GAMERA, not RCM.
+\end{column}
+\begin{column}{0.47\textwidth}
+\begin{block}{Comparison with Literature}
+\footnotesize
+\begin{tabular}{@{}p{1.8cm}p{1.2cm}rr@{}}
+\toprule
+Study & Bndry & Bubble & Pre-ex \\
+\midrule
+Sciola$^\dag$ & 6\,R$_E$ & $\geq$50\% & --- \\
+Yang$^\ddag$ & 15\,R$_E$ & $\sim$60\% & $\sim$20\% \\
+\textbf{Ours} & 15\,R$_E$ & 10\% & 44\% \\
+Ours & 25\,R$_E$ & 7\% & 46\% \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+
+\scriptsize
+$^\dag$Enthalpy flux; no pre-existing concept\\
+$^\ddag$Among injected only; has trapped category
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ Drift Decomposition ============
+\begin{frame}{Validation: Drift Decomposition of FO Trajectories}
+
+\centering
+\includegraphics[width=0.95\textwidth]{figures/drift_decomposition_10k.png}
+
+\vspace{2pt}
+\footnotesize
+Bounce-averaged FO drift decomposed into ExB + grad-curv components.
+614{,}364 samples in RC (3--7\,R$_E$, 5--500\,keV).
+\textbf{Median speed ratio = 0.92} (predicted explains 92\% of actual drift).
+\textbf{Direction alignment cos\,$\theta$ = 0.94}.
+\end{frame}
+
+% ============ Drift by Energy and MLT ============
+\begin{frame}{Drift Physics: Energy Dependence and Dawn-Dusk Asymmetry}
+
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/drift_azimuthal_10k.png}
+\end{column}
+\begin{column}{0.48\textwidth}
+\footnotesize
+\textbf{Key findings:}
+\begin{itemize}
+\item ExB dominates below $\sim$20\,keV; grad-curv takes over above
+\item H$^+$ westward drift confirmed at all MLTs for $>$30\,keV
+\item Storm-time ExB has large azimuthal component in dawn sector ($\sim$20--55\,km/s eastward), $\gg$ corotation ($\sim$3\,km/s)
+\item Dawn-dusk asymmetry is physical: verified by H$^-$ charge reversal (mirror-image drift)
+\end{itemize}
+
+\vspace{4pt}
+\textbf{Dominant drift by energy:}
+
+\vspace{2pt}
+\scriptsize
+\begin{tabular}{@{}lrrl@{}}
+\toprule
+Band & ExB & Grad-curv & Dominant \\
+\midrule
+5--20\,keV & 10.6 & 5.2\,km/s & ExB \\
+20--50\,keV & 9.8 & 14.1 & Grad-curv \\
+50--100\,keV & 8.9 & 30.7 & Grad-curv \\
+100--300\,keV & 6.0 & 67.5 & Grad-curv \\
+\bottomrule
+\end{tabular}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ Spatial drift map ============
+\begin{frame}{Equatorial Drift Velocity Maps}
+
+\centering
+\includegraphics[width=0.95\textwidth]{figures/drift_spatial_10k.png}
+
+\vspace{2pt}
+\footnotesize
+Median drift velocity on equatorial plane (first 28\,min). Left: actual FO drift (finite-difference of bounce-averaged position).
+Middle: ExB drift from GAMERA fields. Right: grad-curv drift from $\mathbf{B}\times\nabla|B|$.
+Arrows show direction; color shows speed (km/s). The combined ExB + grad-curv explains both magnitude and direction of FO drift.
+\end{frame}
+
+% ============ Reversibility ============
+\begin{frame}{Validation: Backward Trace Accuracy}
+
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/reversibility_summary.png}
+
+\vspace{2pt}
+\footnotesize
+\textbf{Boris pusher reversibility test:}\\
+Forward then backward with same fixed $\Delta t$.
+Roundtrip error $\sim 10^{-12}$\,R$_E$ (machine precision). Fixed timestep ensures exact time-reversal symmetry.
+\end{column}
+\begin{column}{0.50\textwidth}
+\footnotesize
+\textbf{Accuracy argument for FO backward trace:}
+\begin{enumerate}
+\item Boris pusher is symplectic $\to$ machine-precision reversible with fixed $\Delta t$
+\item Drift decomposition confirms ExB + grad-curv explains 92\% of FO eq-plane motion (direction cos\,$\theta$ = 0.94)
+\item H$^-$ charge reversal gives mirror-image dawn-dusk pattern, confirming grad-curv drift physics
+\item Energy conservation: $|\Delta K|/K < 1\%$ over 4\,h trace
+\end{enumerate}
+
+\vspace{4pt}
+\textbf{Conclusion:} FO backward trace faithfully captures the physical drift motion. The Boris pusher preserves the Hamiltonian structure, and the drift analysis independently confirms the trajectories are governed by the expected ExB + grad-curv physics.
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ Discussion ============
+\begin{frame}{Discussion and Next Steps}
+
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+\textbf{Summary:}
+\begin{itemize}
+\item Full-orbit backward trace successfully identifies bubble vs convection vs pre-existing RC origins
+\item FO drift validated: ExB + grad-curv explains $>$90\% of drift speed and direction
+\item Bubble + pre-existing $\sim$54\% of RC at 15\,R$_E$, consistent with Sciola and Yang
+\item H$^-$ reversal confirms dawn-dusk asymmetry is physical (grad-curv drift)
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+\textbf{Next steps:}
+\begin{itemize}
+\item Refine bubble criteria (enthalpy flux weighting, MLT dependence)
+\item Compare with Sina's RCM backtracker on same event
+\item Energy-resolved bubble fraction (low-K vs high-K)
+\item Run with October 2013 higher-resolution GAMERA simulation
+\item Implement V$_\text{eff}$ drift scheme for hybrid solver validation
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\end{document}
