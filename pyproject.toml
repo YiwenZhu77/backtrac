@@ -1,0 +1,20 @@
+[project]
+name = "backtrac"
+version = "0.1.0"
+description = "Backward test particle tracing through MAGE RCM fields"
+authors = [{name = "Y. Zhu", email = "yz167@rice.edu"}]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+    "scipy",
+    "h5py",
+    "pyyaml",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.backends._legacy:_Backend"

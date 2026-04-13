@@ -1,0 +1,35 @@
+# Configuration for St. Patrick's Day 2013 storm (sp13_075)
+
+# Data paths
+rcm_data: /glade/derecho/scratch/yizhu/backtrac_pilot/sp13_075_rcm_mage.h5
+gamera_dir: /glade/derecho/scratch/sbao/sp13_075
+output_dir: /glade/derecho/scratch/yizhu/backtrac_pilot
+
+# RCM grid dimensions
+i_max: 180
+j_max: 361
+n_chunks: 241        # 241 minutes: t=21600 (6 UT) to t=36000 (10 UT)
+start_chunk: 240     # Start from latest time (backward)
+
+# Particle seeding
+n_particles: 1000
+K_min: 10.0          # keV
+K_max: 200.0         # keV
+r_min: 4.2           # RE
+r_max: 6.6           # RE
+
+# Parallel
+n_cores: 32
+
+# Physics
+physics:
+  n_substeps: 10     # Euler substeps per minute
+  dt_chunk: -60.0    # Seconds per chunk (negative = backward)
+
+# Bubble identification
+bubble:
+  dbz_threshold: 15.0    # nT
+  mlt_min: 21.0          # MLT hours (start of midnight sector)
+  mlt_max: 3.0           # MLT hours (end, wraps around midnight)
+  r_min: 6.0             # RE (exclude inner RC)
+  x_max: 0.0             # Nightside only

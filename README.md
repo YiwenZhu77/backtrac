@@ -1,154 +1,120 @@
-# BackTrac: Backward Test Particle Tracing in MAGE
+# BackTrac
 
-Determine what fraction of storm-time ring current H+ originates from plasma sheet bubbles (BBFs) vs quiet convection, using backward particle tracing through GAMERA-RCM coupled MHD fields.
+Backward test particle tracing through MAGE RCM fields to determine the origin of storm-time ring current H+ ions (bubble vs convection vs pre-existing).
 
-## Methods
+Uses the RCM effective potential V_eff = V + lambda * V_M for bounce-averaged drift on the ionospheric (I,J) grid, with inductive E field captured implicitly through the time-varying XMIN(I,J,t) mapping.
 
-Two independent backward tracers are compared:
-
-| Method | Code | Physics | Speed |
-|--------|------|---------|-------|
-| **Full Orbit (FO)** | CHIMP Boris pusher | Complete Lorentz force, E=-VxB | ~10h for 10k TPs (Derecho, 128 cores) |
-| **Sina's V_eff** | `pilot/run_sina_veff.py` | Bounce-averaged drift, V_eff=V+lambda*V_M | ~3 min for 1k TPs (32 cores) |
-
-### Full Orbit (FO)
-
-Boris pusher in CHIMP with fixed dt=0.01s. Uses GAMERA E=-VxB (includes both electrostatic and inductive E field). Equatorial projection via field line tracing (`doEQProj=T` outputs `xeq`, `yeq`).
-
-CHIMP source: `kaiju-private` repo (Bitbucket, private), branch `backtrac`.
-
-### Sina's V_eff Backtracker
-
-Bounce-averaged drift using RCM's effective potential:
-
-```
-V_eff = V + lambda * V_M
-```
-
-- `V`: electrostatic potential from REMIX (Vasyliunas equation)
-- `V_M = (bVol * 1e-9)^(-2/3)`: encodes flux tube volume (magnetic geometry)
-- `lambda`: adiabatic invariant, fixed per particle
-- Energy: `K[keV] = |lambda| * V_M / 1000` (varies with position)
-- `lambda * V_M` = particle energy in eV (= Volts for q=e)
-
-Inductive E field is captured implicitly through the time-varying (I,J) -> (x,y) mapping via XMIN(I,J,t).
-
-Adapted from Sina Sadeghzadeh's standalone RCM backtracker. Key fix for MAGE: COLAT stored in radians, not degrees.
-
-## Bubble Identification
-
-A particle is classified as *bubble origin* if it **ever** passes through a region satisfying all of:
-
-- dBz > 15 nT (dipolarization signature)
-- MLT 21-03 (midnight sector)
-- x < 0 (nightside)
-- r > 6 RE (not inner ring current)
-
-## Pilot Results
-
-1000 H+ ions, 10-200 keV, seeded uniformly in r=4.2-6.6 RE.  
-4-hour backward trace: 10:00 -> 06:00 UT, St. Patrick's Day storm (17 March 2013).
-
-|  | FO | Sina V_eff |
-|--|-----|-----------|
-| Bubble | 30% | 16% |
-| Pre-existing | 15% | 70% |
-| Convection | 56% | 15% |
-
-FO sees more bubbles because full-orbit grad-curv drift carries particles through bubble channels faster than bounce-averaged drift. Direction agreement cos(theta) = 0.98 at 5 min; speed ratio ~0.83.
-
-## Directory Structure
-
-```
-backtrac/
-  pilot/
-    run_sina_veff.py        # Sina V_eff backtracker (multiprocessing)
-    make_comparison_video.py # FO vs Sina video with dBz + bubble contour
-    make_video_mt.py        # FO-only video with classified TPs
-    analyze_production.py   # Sciola bubble classification at fixed radius
-    run_pilot.pbs           # PBS job script for CHIMP FO run
-    sp13_backtrace.xml      # CHIMP XML config for backward trace
-  slides/
-    backtrac_pilot.tex      # Beamer slides (LaTeX)
-    backtrac_pilot.pptx     # PowerPoint version with embedded video
-  rcm_backtrac/             # Sina's original code (separate git repo)
-```
-
-## Prerequisites
-
-### For Sina V_eff (`run_sina_veff.py`)
+## Install
 
 ```bash
-pip install numpy scipy h5py
-```
-
-Input data (from MAGE sp13_075 simulation):
-- `sp13_075_rcm_mage.h5`: RCM fields (V, VM, COLAT, ALOCT, XMIN, YMIN) converted to Sina format
-- `sp13_10k.000001.h5part`: CHIMP FO output for initial conditions
-- `sp13_1k_indices.npy`: subset indices
-
-### For CHIMP FO
-
-Requires CHIMP build from `kaiju-private` (branch `backtrac`). Key XML settings:
-
-```xml
-<pusher doBackward="T" doFixedDt="T" imeth="FO"/>
-<output doEQProj="T" dtOut="60.0"/>
-<init file="sp13_1k.tpInit" format="phaseSpace"/>
-```
-
-### For comparison video
-
-```bash
-pip install matplotlib
-# Also needs kaipy (private): sys.path.insert(0, '/path/to/kaipy-private')
+pip install -e .
 ```
 
 ## Quick Start
 
-### Run Sina V_eff (1000 particles, ~3 min on 32 cores)
+### 1. Run backward trace
 
 ```bash
-cd pilot
-python3 run_sina_veff.py
-# Output: sina_1k_traj.npy (241 timesteps x 1000 particles x 2 [x,y])
+python scripts/run_backtrace.py configs/sp13_075.yaml \
+    --h5part /path/to/sp13_10k.000001.h5part \
+    --indices /path/to/sp13_1k_indices.npy \
+    -o results/traj.npy
 ```
 
-### Generate comparison video
+Or with uniform seeding (no h5part needed):
 
 ```bash
-cd pilot
-python3 make_comparison_video.py
-# Renders 241 frames, then use ffmpeg:
-ffmpeg -framerate 12 -i frames/frame_%04d.png -vcodec libx264 -crf 24 \
-  -pix_fmt yuv420p -movflags +faststart output.mp4
+python scripts/run_backtrace.py configs/sp13_075.yaml \
+    --uniform -o results/traj.npy
 ```
 
-### Run CHIMP FO (requires Derecho)
+### 2. Classify bubble origins
 
 ```bash
-ssh derecho
-cd /glade/derecho/scratch/yizhu/backtrac_pilot
-qsub run_pilot.pbs
+python scripts/analyze.py configs/sp13_075.yaml results/traj.npy \
+    --meta results/traj_meta.npy
 ```
 
-## Data Locations (NCAR GLADE)
+### 3. Generate comparison video
+
+```bash
+python scripts/make_video.py configs/sp13_075.yaml \
+    results/traj.npy results/traj_class.npz
+```
+
+## Configuration
+
+Edit `configs/sp13_075.yaml`:
+
+```yaml
+rcm_data: /path/to/sp13_075_rcm_mage.h5   # MAGE RCM data (Sina format)
+gamera_dir: /path/to/sp13_075/             # GAMERA simulation (for dBz)
+n_particles: 1000
+n_cores: 32
+
+bubble:
+  dbz_threshold: 15.0     # nT (dipolarization)
+  mlt_min: 21.0            # Midnight sector start
+  mlt_max: 3.0             # Midnight sector end
+  r_min: 6.0               # Exclude inner RC
+```
+
+## Data Preparation
+
+BackTrac needs MAGE RCM output converted to a flat HDF5 format. Use the conversion script:
+
+```bash
+python scripts/convert_mage.py /path/to/msphere.rcm.h5 \
+    --steps 360-600 -o sp13_075_rcm_mage.h5
+```
+
+The output contains per-chunk arrays of V, VM, COLAT, ALOCT, XMIN, YMIN flattened as 1D datasets.
+
+**Important**: MAGE stores COLAT in **radians**, not degrees. BackTrac handles this correctly.
+
+## Package Structure
 
 ```
-/glade/derecho/scratch/sbao/sp13_075/          # GAMERA-RCM simulation
-/glade/derecho/scratch/yizhu/backtrac_pilot/   # Working directory
-  sp13_eqproj.000001.h5part                    # FO output with xeq/yeq
-  sp13_075_rcm_mage.h5                         # RCM data in Sina format
-  sina_1k_traj.npy                             # Sina V_eff trajectories
+backtrac/
+  backtrac/              # Python package
+    config.py            # Configuration (dataclass + YAML loading)
+    data.py              # MAGE RCM data loader and interpolation
+    integrator.py        # V_eff drift integrator (multiprocessing)
+    particles.py         # Particle initialization
+    classify.py          # Bubble classification using GAMERA dBz
+    viz.py               # Video and figure rendering
+  scripts/               # CLI entry points
+    run_backtrace.py     # Run backward trace
+    analyze.py           # Classify and report statistics
+  configs/               # YAML config files
+    sp13_075.yaml        # St. Patrick's Day 2013 storm
 ```
+
+## Physics
+
+**Drift equation** on ionospheric (I,J) grid:
+
+```
+dI/dt = (1/fac) * dV_eff/dJ
+dJ/dt = -(1/fac) * dV_eff/dI
+```
+
+where:
+- `V_eff = V + lambda * V_M`
+- `V`: electrostatic potential from REMIX (Volts)
+- `V_M = (bVol * 1e-9)^(-2/3)`: magnetic geometry factor
+- `lambda`: adiabatic invariant (fixed per particle)
+- `lambda * V_M = K[eV]`: particle energy at given position
+- `fac = r_i^2 * |Br| * sin(theta) * dphi/dJ * dtheta/dI`: Jacobian
+
+**Bubble identification**: particle is *bubble origin* if it ever passes through a region with dBz > threshold in the midnight sector.
 
 ## References
 
-- Sciola et al. (2023): Bubble contribution to ring current via enthalpy flux
-- Yang et al. (2015): RCM-E backward trace, ~60% bubble pressure contribution
-- Sadeghzadeh (2024): RCM standalone backtracker (adapted here for MAGE)
+- Sciola et al. (2023): Bubble contribution to ring current
+- Yang et al. (2015): RCM-E backward trace
+- Sadeghzadeh (2024): RCM standalone backtracker
 
 ## Authors
 
-Y. Zhu, S. Bao, S. Sadeghzadeh, F. Toffoletto  
-Department of Physics and Astronomy, Rice University
+Y. Zhu, S. Bao, S. Sadeghzadeh, F. Toffoletto — Rice University
