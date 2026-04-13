@@ -4,6 +4,22 @@ Backward test particle tracing through MAGE RCM fields to determine the origin o
 
 Uses the RCM effective potential V_eff = V + lambda * V_M for bounce-averaged drift on the ionospheric (I,J) grid, with inductive E field captured implicitly through the time-varying XMIN(I,J,t) mapping.
 
+> **Status**: Pilot study using the St. Patrick's Day 2013 GAMERA-RCM simulation (sp13_075) by S. Bao.
+
+## Pilot Data
+
+MAGE simulation: `/glade/derecho/scratch/sbao/sp13_075/` (NCAR GLADE)
+
+Converted RCM data and results: `/glade/derecho/scratch/yizhu/backtrac_pilot/`
+
+| File | Description |
+|------|-------------|
+| `sp13_075_rcm_mage.h5` | RCM fields (V, VM, COLAT, ALOCT, XMIN, YMIN) in Sina format, 241 chunks (6-10 UT) |
+| `sp13_eqproj.000001.h5part` | CHIMP FO output with equatorial projection (xeq, yeq), 1000 particles |
+| `sp13_10k.000001.h5part` | CHIMP FO output (10k particles, no eq projection) |
+| `sp13_1k_indices.npy` | 1000-particle subset indices from 10k |
+| `sina_1k_traj.npy` | Sina V_eff trajectories (241 × 1000 × 2) |
+
 ## Install
 
 ```bash
