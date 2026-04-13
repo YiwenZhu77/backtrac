@@ -5,24 +5,22 @@ from multiprocessing import Pool, cpu_count
 from .config import RunConfig, PhysicsConfig
 from .data import MageRCMData
 
+# Module-level global for shared data across forked workers
+_shared_data: MageRCMData = None
+_shared_cfg: RunConfig = None
 
-def _compute_drift(I: float, J: float, lam: float,
-                   ic, ias, iac, iv, ivm,
-                   phys: PhysicsConfig, j_max: int, j_period: int):
-    """Compute dI/dt, dJ/dt at position (I, J) with given lambda.
 
-    Returns (dI_dt, dJ_dt) or (nan, nan) if invalid.
-    """
+def _compute_drift(I, J, lam, ic, ias, iac, iv, ivm,
+                   phys, j_max, j_period):
+    """Compute dI/dt, dJ/dt at position (I, J) with given lambda."""
     theta = ic([J, I])[0]
     if np.isnan(theta):
         return np.nan, np.nan
 
-    d = 0.5  # finite difference step
+    d = 0.5
 
-    # dtheta/dI
     dth = (ic([J, I + d])[0] - ic([J, I - d])[0]) / (2 * d)
 
-    # dphi/dJ (with wrapping)
     Jm, Jp = J - d, J + d
     if Jm < 1: Jm += j_period
     if Jp > j_max: Jp -= j_period
@@ -36,7 +34,6 @@ def _compute_drift(I: float, J: float, lam: float,
     dth = max(abs(dth), 1e-8) * (1 if dth >= 0 else -1)
     dph = max(abs(dph), 1e-8) * (1 if dph >= 0 else -1)
 
-    # dV_eff/dI and dV_eff/dJ
     VmI = iv([J, I - d])[0] + lam * ivm([J, I - d])[0]
     VpI = iv([J, I + d])[0] + lam * ivm([J, I + d])[0]
     dVeI = (VpI - VmI) / (2 * d)
@@ -48,7 +45,6 @@ def _compute_drift(I: float, J: float, lam: float,
     VpJ = iv([Jp2, I])[0] + lam * ivm([Jp2, I])[0]
     dVeJ = (VpJ - VmJ) / (2 * d)
 
-    # Jacobian (fac) with dipole Br
     Br = -2 * phys.B0 * (phys.RE / phys.RI) ** 3 * np.cos(theta)
     fac = phys.RI ** 2 * abs(Br) * np.sin(theta) * dph * dth
     fac = max(abs(fac), phys.epsilon) * (np.sign(fac) if fac != 0 else 1)
@@ -56,28 +52,17 @@ def _compute_drift(I: float, J: float, lam: float,
     return dVeJ / fac, -dVeI / fac
 
 
-def integrate_particle(args):
-    """Integrate one particle backward. Called by multiprocessing.Pool.
-
-    Args: (I_start, J_start, lambda, n_steps, cfg_dict)
-    Returns: list of (x, y) tuples, one per timestep.
-    """
-    I_start, J_start, lam, n_steps, cfg_dict = args
-
-    # Reconstruct objects from serializable dict
-    cfg = RunConfig(**{k: v for k, v in cfg_dict.items()
-                       if k not in ('physics', 'bubble')})
-    cfg.physics = PhysicsConfig(**cfg_dict.get('physics', {}))
-
-    data = MageRCMData(cfg)
-    data.load_all()
-
+def _integrate_one(args):
+    """Integrate one particle. Uses module-level _shared_data (fork-inherited)."""
+    I_start, J_start, lam, n_steps = args
+    data = _shared_data
+    cfg = _shared_cfg
     phys = cfg.physics
+
     I_p, J_p = float(I_start), float(J_start)
     sub_dt = phys.dt_chunk / phys.n_substeps
     j_period = data.j_period
 
-    # Initial position
     x0, y0 = data.get_xy_at(cfg.start_chunk, I_p, J_p)
     traj = [(x0, y0)]
 
@@ -122,29 +107,38 @@ def integrate_particle(args):
     return traj
 
 
-def run_backtrace(particles, cfg: RunConfig):
+def run_backtrace(particles, cfg: RunConfig, data: MageRCMData = None):
     """Run backward trace for a list of particles using multiprocessing.
+
+    Data is loaded once in the main process and shared via fork.
 
     Args:
         particles: list of (I, J, lambda) tuples
         cfg: RunConfig
+        data: Pre-loaded MageRCMData (optional; loaded if not provided)
 
     Returns:
         np.ndarray of shape (n_steps+1, n_particles, 2)
     """
-    from dataclasses import asdict
-    cfg_dict = asdict(cfg)
+    global _shared_data, _shared_cfg
+
+    if data is None:
+        data = MageRCMData(cfg)
+        data.load_all()
+
+    # Set module globals for forked workers to inherit
+    _shared_data = data
+    _shared_cfg = cfg
 
     n_steps = cfg.start_chunk
-    tasks = [(I, J, lam, n_steps, cfg_dict) for I, J, lam in particles]
+    tasks = [(I, J, lam, n_steps) for I, J, lam in particles]
 
     n_cores = min(cfg.n_cores, cpu_count())
     print(f'Running {len(tasks)} particles on {n_cores} cores...')
 
     with Pool(n_cores) as pool:
-        results = pool.map(integrate_particle, tasks)
+        results = pool.map(_integrate_one, tasks)
 
-    # Pack into array
     out = np.full((n_steps + 1, len(particles), 2), np.nan)
     for pi, traj in enumerate(results):
         for ti, (x, y) in enumerate(traj):

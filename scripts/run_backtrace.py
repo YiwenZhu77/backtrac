@@ -40,7 +40,7 @@ def main():
     print(f'Initialized {len(particles)} particles')
 
     t0 = time.time()
-    traj = run_backtrace(particles, cfg)
+    traj = run_backtrace(particles, cfg, data=data)
     print(f'Done in {time.time() - t0:.1f}s')
 
     np.save(args.output, traj)

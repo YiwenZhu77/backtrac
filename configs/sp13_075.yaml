@@ -1,9 +1,10 @@
 # Configuration for St. Patrick's Day 2013 storm (sp13_075)
 
 # Data paths
-rcm_data: /glade/derecho/scratch/yizhu/backtrac_pilot/sp13_075_rcm_mage.h5
-gamera_dir: /glade/derecho/scratch/sbao/sp13_075
-output_dir: /glade/derecho/scratch/yizhu/backtrac_pilot
+# Update these paths for your system:
+rcm_data: data/rcm_data.h5                       # Output from convert_mage.py
+gamera_dir: /path/to/gamera/simulation            # For dBz (only needed for classify/video)
+output_dir: results/
 
 # RCM grid dimensions
 i_max: 180
