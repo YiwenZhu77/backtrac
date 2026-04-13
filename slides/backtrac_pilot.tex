@@ -53,201 +53,206 @@
 \toprule
 \textbf{Study} & \textbf{Finding} \\
 \midrule
-Sciola 2023 & $\geq$50\% RC energy from bubbles (enthalpy flux at 6\,R$_E$) \\
-Yang 2015 & $\sim$60\% pressure from bubbles (RCM-E trace at 15\,R$_E$) \\
+Sciola 2023 & $\geq$50\% RC energy from bubbles \\
+Yang 2015 & $\sim$60\% pressure from bubbles \\
 \bottomrule
 \end{tabular}
 
 \vspace{6pt}
 \normalsize
-\textbf{Our approach}: CHIMP full-orbit backward trace in GAMERA fields. Advantage over RCM: traces through bubble interiors with full Lorentz force.
+\textbf{Two approaches compared}:
+\begin{enumerate}
+\item CHIMP full-orbit (FO) backward trace in GAMERA fields ($\mathbf{E}=-\mathbf{V}\times\mathbf{B}$, Boris pusher)
+\item Sina's RCM backtracker ($V_\text{eff} = \Phi + \lambda V_M$, bounce-averaged drift)
+\end{enumerate}
 \end{column}
 \begin{column}{0.45\textwidth}
 \footnotesize
-\textbf{Pilot setup (same event as Sciola):}
+\textbf{Pilot setup}:
 \begin{itemize}
-\item GAMERA-RCM, 17 March 2013 storm
-\item 10{,}000 H$^+$, 10--200\,keV
+\item GAMERA-RCM (sp13\_075), 17 March 2013
+\item 1{,}000 H$^+$, 10--200\,keV
 \item Uniform in $r_\text{eq}=4.2$--6.6\,R$_E$
-\item $\eta$ weights from RCM for analysis
 \item Backward 4\,h: 10:00$\to$06:00\,UT
-\item Fixed $\Delta t=0.01$\,s (Boris pusher)
+\item FO: fixed $\Delta t=0.01$\,s, $x_\text{eq}/y_\text{eq}$ from field line trace
+\item Sina: $V_\text{eff}$ drift on $(I,J)$ grid, RK4 with 10 substeps/min
 \end{itemize}
 \vspace{2pt}
-\textbf{Bubble ID (Sciola):}\\
-$\Delta B_\tau > 10$\,nT and $V_r<0$ on GAMERA equatorial plane arc, $\tau=2$\,min
+\textbf{Bubble criteria}:\\
+$\Delta B_z > 15$\,nT on GAMERA eq.\ plane,\\
+midnight sector (MLT 21--03),\\
+$x<0$, $r>6$\,R$_E$
 \end{column}
 \end{columns}
 \end{frame}
 
-% ============ 4 Solvers ============
-\begin{frame}{Solver Comparison: 4 Backward Trace Modes}
-
-\centering
-\includegraphics[width=0.78\textwidth]{figures/4panel_snapshot_t30.png}
-
-\vspace{2pt}
-\footnotesize
-08:00\,UT snapshot. Background: GAMERA $\Delta B_z$. Four solver modes:
-
-\vspace{2pt}
-\begin{tabular}{@{}llp{7.5cm}@{}}
-\toprule
-\textbf{Panel} & \textbf{Mode} & \textbf{Physics} \\
-\midrule
-Top-left & Full Orbit (FO) & Boris pusher, full Lorentz force everywhere \\
-Top-right & RCM + Frozen & Bounce-avg drift (ExB+gc) inside RCM domain; ExB only outside \\
-Bottom-left & FO + Frozen & Full orbit inside RCM domain; ExB only outside \\
-Bottom-right & H$^-$ (charge reversal) & Same as FO but reversed charge: grad-curv drift eastward \\
-\bottomrule
-\end{tabular}
-
-\vspace{2pt}
-\textit{(See video attachments for full time evolution)}
-\end{frame}
-
-% ============ Bubble fraction ============
-\begin{frame}{Results: RC Population Breakdown}
+% ============ Sina adaptation ============
+\begin{frame}{Sina's RCM Backtracker: Adaptation for MAGE}
 
 \begin{columns}[T]
 \begin{column}{0.50\textwidth}
-\footnotesize
-\textbf{RC population at three boundaries:}
-\vspace{2pt}
+\textbf{Sina's method} (Sadeghzadeh, standalone RCM):
+\begin{itemize}
+\item Tracks $\eta$ channels in $(I,J)$ ionospheric grid
+\item $V_\text{eff} = V + \lambda \cdot V_M$
+\item $\lambda$: adiabatic invariant ($K = |\lambda| \cdot V_M / 1000$)
+\item Inductive $\mathbf{E}$ implicit via $X_\text{MIN}(I,J,t)$ evolution
+\item Dipole $B_r$ in Jacobian ($\sim$4\% error vs actual)
+\end{itemize}
 
-\begin{tabular}{@{}lrrr@{}}
+\vspace{4pt}
+\textbf{Key fix for MAGE output}:\\
+MAGE \texttt{colat} stored in \textbf{radians}; Sina's code assumed degrees. Double conversion shrunk $\sin\theta$ by $57\times$ $\to$ \texttt{fac} too small $\to$ 80\% particle death in 5 steps. Fixed all RK4 stages (k1--k4).
+\end{column}
+\begin{column}{0.48\textwidth}
+\textbf{Validation}:
+
+\vspace{2pt}
+\footnotesize
+\begin{tabular}{@{}lrr@{}}
 \toprule
- & 6\,R$_E$ & 15\,R$_E$ & 25\,R$_E$ \\
+ & Sina fixed & Sina rewrite \\
 \midrule
-Pre-existing & 30\% & 44\% & 46\% \\
-Bubble & 3\% & 10\% & 7\% \\
-Convection & 67\% & 46\% & 47\% \\
+$\cos\theta$ (5\,min) & 0.981 & 0.982 \\
+$\cos\theta$ (20\,min) & 0.880 & 0.880 \\
+err (5\,min) & 0.59\,R$_E$ & 0.59\,R$_E$ \\
+Survive (60\,min) & 744 & 896 \\
+\bottomrule
+\end{tabular}
+\normalsize
+
+\vspace{6pt}
+After fix, Sina's original code and our rewrite give identical trajectories. Survival difference from ellipse masking in original \texttt{data\_init.py}.
+
+\vspace{4pt}
+Code: \texttt{backtrac/rcm\_backtrac/} (git)\\
+\texttt{backtrac/pilot/run\_sina\_1k.py}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ FO vs Sina comparison ============
+\begin{frame}{FO vs Sina: Trajectory Comparison}
+
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/fo_vs_sina_systematic.png}
+\end{column}
+\begin{column}{0.48\textwidth}
+\footnotesize
+\textbf{FO vs Sina V$_\text{eff}$ (1000 TPs)}:
+
+\vspace{2pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & cos\,$\theta$ & err (R$_E$) \\
 \midrule
-\textbf{Bub+Pre} & \textbf{33\%} & \textbf{54\%} & \textbf{53\%} \\
+5\,min & 0.98 & 0.59 \\
+10\,min & 0.96 & 1.19 \\
+20\,min & 0.88 & 3.27 \\
+60\,min & 0.69 & 8.73 \\
 \bottomrule
 \end{tabular}
 
 \vspace{6pt}
 \normalsize
-Bubble + pre-existing converges to $\sim$54\% at 15--25\,R$_E$, consistent with Sciola ($\geq$50\%) and Yang ($\sim$60\%).
-
-\vspace{4pt}
-\footnotesize
-At 25\,R$_E$, particles interact with BBFs in the mid-tail --- a region only accessible via full-orbit tracing in GAMERA, not RCM.
-\end{column}
-\begin{column}{0.47\textwidth}
-\begin{block}{Comparison with Literature}
-\footnotesize
-\begin{tabular}{@{}p{1.8cm}p{1.2cm}rr@{}}
-\toprule
-Study & Bndry & Bubble & Pre-ex \\
-\midrule
-Sciola$^\dag$ & 6\,R$_E$ & $\geq$50\% & --- \\
-Yang$^\ddag$ & 15\,R$_E$ & $\sim$60\% & $\sim$20\% \\
-\textbf{Ours} & 15\,R$_E$ & 10\% & 44\% \\
-Ours & 25\,R$_E$ & 7\% & 46\% \\
-\bottomrule
-\end{tabular}
-\vspace{2pt}
-
-\scriptsize
-$^\dag$Enthalpy flux; no pre-existing concept\\
-$^\ddag$Among injected only; has trapped category
-\end{block}
-\end{column}
-\end{columns}
-\end{frame}
-
-% ============ Drift Decomposition ============
-\begin{frame}{Validation: Drift Decomposition of FO Trajectories}
-
-\centering
-\includegraphics[width=0.95\textwidth]{figures/drift_decomposition_10k.png}
-
-\vspace{2pt}
-\footnotesize
-Bounce-averaged FO drift decomposed into ExB + grad-curv components.
-614{,}364 samples in RC (3--7\,R$_E$, 5--500\,keV).
-\textbf{Median speed ratio = 0.92} (predicted explains 92\% of actual drift).
-\textbf{Direction alignment cos\,$\theta$ = 0.94}.
-\end{frame}
-
-% ============ Drift by Energy and MLT ============
-\begin{frame}{Drift Physics: Energy Dependence and Dawn-Dusk Asymmetry}
-
-\begin{columns}[T]
-\begin{column}{0.50\textwidth}
-\centering
-\includegraphics[width=\textwidth]{figures/drift_azimuthal_10k.png}
-\end{column}
-\begin{column}{0.48\textwidth}
-\footnotesize
-\textbf{Key findings:}
+\textbf{Speed ratio} (Sina/FO) $\approx$ 0.83:
 \begin{itemize}
-\item ExB dominates below $\sim$20\,keV; grad-curv takes over above
-\item H$^+$ westward drift confirmed at all MLTs for $>$30\,keV
-\item Storm-time ExB has large azimuthal component in dawn sector ($\sim$20--55\,km/s eastward), $\gg$ corotation ($\sim$3\,km/s)
-\item Dawn-dusk asymmetry is physical: verified by H$^-$ charge reversal (mirror-image drift)
+\item Bounce-averaged drift systematically slower than full orbit
+\item Low-K ($<$30\,keV): ExB dominated, good match
+\item High-K ($>$100\,keV): gc drift dominates, $\sim$20\% slower in Sina
 \end{itemize}
 
 \vspace{4pt}
-\textbf{Dominant drift by energy:}
-
-\vspace{2pt}
-\scriptsize
-\begin{tabular}{@{}lrrl@{}}
-\toprule
-Band & ExB & Grad-curv & Dominant \\
-\midrule
-5--20\,keV & 10.6 & 5.2\,km/s & ExB \\
-20--50\,keV & 9.8 & 14.1 & Grad-curv \\
-50--100\,keV & 8.9 & 30.7 & Grad-curv \\
-100--300\,keV & 6.0 & 67.5 & Grad-curv \\
-\bottomrule
-\end{tabular}
+\textit{(See video attachments)}
 \end{column}
 \end{columns}
 \end{frame}
 
-% ============ Spatial drift map ============
-\begin{frame}{Equatorial Drift Velocity Maps}
-
-\centering
-\includegraphics[width=0.95\textwidth]{figures/drift_spatial_10k.png}
-
-\vspace{2pt}
-\footnotesize
-Median drift velocity on equatorial plane (first 28\,min). Left: actual FO drift (finite-difference of bounce-averaged position).
-Middle: ExB drift from GAMERA fields. Right: grad-curv drift from $\mathbf{B}\times\nabla|B|$.
-Arrows show direction; color shows speed (km/s). The combined ExB + grad-curv explains both magnitude and direction of FO drift.
-\end{frame}
-
-% ============ Reversibility ============
-\begin{frame}{Validation: Backward Trace Accuracy}
+% ============ Bubble results ============
+\begin{frame}{Results: Bubble Contribution to Ring Current}
 
 \begin{columns}[T]
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{figures/reversibility_summary.png}
+\begin{column}{0.50\textwidth}
+\footnotesize
+\textbf{Origin classification} (ever-in-bubble criterion):\\
+$\Delta B_z > 15$\,nT, midnight MLT 21--03, $x<0$, $r>6$\,R$_E$
+
+\vspace{4pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & \textbf{FO} & \textbf{Sina} \\
+\midrule
+Bubble & 30\% & 16\% \\
+Pre-existing & 15\% & 70\% \\
+Convection & 56\% & 15\% \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\normalsize
+\textbf{By energy}:
 
 \vspace{2pt}
 \footnotesize
-\textbf{Boris pusher reversibility test:}\\
-Forward then backward with same fixed $\Delta t$.
-Roundtrip error $\sim 10^{-12}$\,R$_E$ (machine precision). Fixed timestep ensures exact time-reversal symmetry.
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Energy & FO bubble & Sina bubble \\
+\midrule
+10--30\,keV & 52\% & 26\% \\
+30--60\,keV & 38\% & 27\% \\
+60--120\,keV & 23\% & 6\% \\
+120--200\,keV & 6\% & 6\% \\
+\bottomrule
+\end{tabular}
 \end{column}
-\begin{column}{0.50\textwidth}
+\begin{column}{0.48\textwidth}
 \footnotesize
-\textbf{Accuracy argument for FO backward trace:}
+\textbf{Key findings}:
+\begin{itemize}
+\item FO sees \textbf{more bubbles} (30\% vs 16\%) because full-orbit gc drift carries particles through bubble channels faster
+\item Sina has \textbf{more pre-existing} (70\% vs 15\%) because bounce-averaged drift is slower $\to$ particles don't escape RC in 4\,h
+\item Low-energy particles ($<$30\,keV) have highest bubble fraction in both methods --- ExB convection efficiently transports them through bubbles
+\item High-energy ($>$120\,keV) bubble fraction converges ($\sim$6\%) --- these particles drift azimuthally too fast to be captured by bubbles
+\end{itemize}
+
+\vspace{4pt}
+\normalsize
+\textbf{FO is more trustworthy}: complete Lorentz force, includes gc drift and inductive E in $\mathbf{E}=-\mathbf{V}\times\mathbf{B}$
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ RCM domain ============
+\begin{frame}{RCM Domain Structure in MAGE}
+
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/rcm_boundary_and_jumpers.png}
+\end{column}
+\begin{column}{0.48\textwidth}
+\footnotesize
+\textbf{Three zones on RCM grid}:
 \begin{enumerate}
-\item Boris pusher is symplectic $\to$ machine-precision reversible with fixed $\Delta t$
-\item Drift decomposition confirms ExB + grad-curv explains 92\% of FO eq-plane motion (direction cos\,$\theta$ = 0.94)
-\item H$^-$ charge reversal gives mirror-image dawn-dusk pattern, confirming grad-curv drift physics
-\item Energy conservation: $|\Delta K|/K < 1\%$ over 4\,h trace
+\item \texttt{CLOSED} ($i_\text{open}=-1$): RCM active, $\eta$ advected by $V_\text{eff}$
+\item \texttt{NULL} ($i_\text{open}=0$): closed field lines but outside \texttt{bndloc} --- buffer zone, VM valid but $\eta$ not pushed
+\item \texttt{OPEN} ($i_\text{open}=+1$): open field lines
 \end{enumerate}
 
 \vspace{4pt}
-\textbf{Conclusion:} FO backward trace faithfully captures the physical drift motion. The Boris pusher preserves the Hamiltonian structure, and the drift analysis independently confirms the trajectories are governed by the expected ExB + grad-curv physics.
+\textbf{Boundary (\texttt{bndloc})} determined by:
+\begin{itemize}
+\item Open/closed from GAMERA field line trace
+\item Smoothed in longitude ($\sim$1\,hr MLT)
+\item ``Only shrink'' constraint $\to$ dayside compression pulls entire boundary earthward
+\end{itemize}
+
+\vspace{4pt}
+Nightside: $\sim$10--15\,R$_E$\\
+Dayside: $\sim$5--6\,R$_E$ (storm compression)\\
+Time-varying (updated each coupling step)
 \end{column}
 \end{columns}
 \end{frame}
@@ -257,22 +262,33 @@ Roundtrip error $\sim 10^{-12}$\,R$_E$ (machine precision). Fixed timestep ensur
 
 \begin{columns}[T]
 \begin{column}{0.50\textwidth}
-\textbf{Summary:}
+\textbf{Summary}:
 \begin{itemize}
-\item Full-orbit backward trace successfully identifies bubble vs convection vs pre-existing RC origins
-\item FO drift validated: ExB + grad-curv explains $>$90\% of drift speed and direction
-\item Bubble + pre-existing $\sim$54\% of RC at 15\,R$_E$, consistent with Sciola and Yang
-\item H$^-$ reversal confirms dawn-dusk asymmetry is physical (grad-curv drift)
+\item FO backward trace: 30\% bubble origin
+\item Sina $V_\text{eff}$: 16\% bubble (slower drift $\to$ fewer reach tail)
+\item Both agree bubbles concentrate in 10--60\,keV range
+\item Drift decomposition validates FO: ExB+gc explains 92\% of equatorial drift
+\item Boris pusher machine-precision reversible with fixed $\Delta t$
+\end{itemize}
+
+\vspace{4pt}
+\textbf{Sina code adaptation}:
+\begin{itemize}
+\item MAGE \texttt{colat} in radians (not degrees)
+\item $\lambda = 1000 K / V_M$ (positive for H$^+$)
+\item Codex audit: found k2/k3/k4 colat bug
 \end{itemize}
 \end{column}
 \begin{column}{0.48\textwidth}
-\textbf{Next steps:}
+\textbf{Next steps}:
 \begin{itemize}
-\item Refine bubble criteria (enthalpy flux weighting, MLT dependence)
-\item Compare with Sina's RCM backtracker on same event
-\item Energy-resolved bubble fraction (low-K vs high-K)
-\item Run with October 2013 higher-resolution GAMERA simulation
-\item Implement V$_\text{eff}$ drift scheme for hybrid solver validation
+\item Scale to 10k particles (FO + Sina)
+\item Full Sciola criteria: $\Delta B_\tau$ + $V_r$ at GAMERA equatorial plane
+\item Energy-weighted (enthalpy flux) bubble fraction
+\item Compare with Sciola ($\geq$50\%) and Yang ($\sim$60\%)
+\item October 2013 higher-resolution run (Shanshan)
+\item Investigate pre-existing RC population
+\item Use RCM $\eta$ weights for proper pressure contribution
 \end{itemize}
 \end{column}
 \end{columns}
