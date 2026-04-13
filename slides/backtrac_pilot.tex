@@ -26,7 +26,7 @@
   \hbox to \paperwidth{\hfill\tiny\insertframenumber/\inserttotalframenumber\hspace{4pt}\vspace{2pt}}%
 }
 
-\usepackage{graphicx,booktabs,amsmath}
+\usepackage{graphicx,booktabs,amsmath,hyperref}
 
 \title{Backward Test Particle Tracing in MAGE\\[4pt]
 {\normalsize Pilot: St.\ Patrick's Day 2013 Storm}}
@@ -86,86 +86,51 @@ $x<0$, $r>6$\,R$_E$
 \end{columns}
 \end{frame}
 
-% ============ Sina adaptation ============
-\begin{frame}{Sina's RCM Backtracker: Adaptation for MAGE}
+% ============ Sina method ============
+\begin{frame}{Sina's RCM Backtracker}
 
 \begin{columns}[T]
 \begin{column}{0.50\textwidth}
-\textbf{Sina's method} (Sadeghzadeh, standalone RCM):
+\textbf{RCM drift formulation}:
 \begin{itemize}
-\item Tracks $\eta$ channels in $(I,J)$ ionospheric grid
-\item $V_\text{eff} = V + \lambda \cdot V_M$
-\item $\lambda$: adiabatic invariant ($K = |\lambda| \cdot V_M / 1000$)
-\item Inductive $\mathbf{E}$ implicit via $X_\text{MIN}(I,J,t)$ evolution
-\item Dipole $B_r$ in Jacobian ($\sim$4\% error vs actual)
+\item Effective potential: $V_\text{eff} = V + \lambda \cdot V_M$
+\item $V$: electrostatic potential from REMIX (Vasyliunas eq.)
+\item $V_M = (\text{bVol})^{-2/3}$: magnetic drift potential (from flux tube volume)
+\item $\lambda$: adiabatic invariant, fixed per particle
+\item Energy: $K\,[\text{keV}] = |\lambda| \cdot V_M / 1000$
 \end{itemize}
 
 \vspace{4pt}
-\textbf{Key fix for MAGE output}:\\
-MAGE \texttt{colat} stored in \textbf{radians}; Sina's code assumed degrees. Double conversion shrunk $\sin\theta$ by $57\times$ $\to$ \texttt{fac} too small $\to$ 80\% particle death in 5 steps. Fixed all RK4 stages (k1--k4).
+\textbf{Drift velocity} on ionospheric $(I,J)$ grid:
+\[
+\frac{dI}{dt} = \frac{1}{\text{fac}}\frac{\partial V_\text{eff}}{\partial J}, \qquad
+\frac{dJ}{dt} = -\frac{1}{\text{fac}}\frac{\partial V_\text{eff}}{\partial I}
+\]
+where $\text{fac} = r_i^2 |B_r| \sin\theta \, \frac{d\phi}{dJ}\frac{d\theta}{dI}$ (Jacobian)
 \end{column}
 \begin{column}{0.48\textwidth}
-\textbf{Validation}:
+\textbf{Inductive E field}:
+
+The electrostatic potential $V$ alone does not contain $-\partial\mathbf{A}/\partial t$. However, the mapping $(I,J) \to (x_\text{eq}, y_\text{eq})$ via $X_\text{MIN}(I,J,t)$ changes each timestep because $\mathbf{B}$ changes. This evolution implicitly captures the inductive E field effect.
+
+\vspace{6pt}
+\textbf{Validation vs FO}:
 
 \vspace{2pt}
 \footnotesize
 \begin{tabular}{@{}lrr@{}}
 \toprule
- & Sina fixed & Sina rewrite \\
+ & $\cos\theta$ & err (R$_E$) \\
 \midrule
-$\cos\theta$ (5\,min) & 0.981 & 0.982 \\
-$\cos\theta$ (20\,min) & 0.880 & 0.880 \\
-err (5\,min) & 0.59\,R$_E$ & 0.59\,R$_E$ \\
-Survive (60\,min) & 744 & 896 \\
+5\,min & 0.98 & 0.6 \\
+10\,min & 0.96 & 1.2 \\
+20\,min & 0.88 & 3.3 \\
 \bottomrule
 \end{tabular}
 \normalsize
 
-\vspace{6pt}
-After fix, Sina's original code and our rewrite give identical trajectories. Survival difference from ellipse masking in original \texttt{data\_init.py}.
-
 \vspace{4pt}
-Code: \texttt{backtrac/rcm\_backtrac/} (git)\\
-\texttt{backtrac/pilot/run\_sina\_1k.py}
-\end{column}
-\end{columns}
-\end{frame}
-
-% ============ FO vs Sina comparison ============
-\begin{frame}{FO vs Sina: Trajectory Comparison}
-
-\begin{columns}[T]
-\begin{column}{0.50\textwidth}
-\centering
-\includegraphics[width=\textwidth]{figures/fo_vs_sina_systematic.png}
-\end{column}
-\begin{column}{0.48\textwidth}
-\footnotesize
-\textbf{FO vs Sina V$_\text{eff}$ (1000 TPs)}:
-
-\vspace{2pt}
-\begin{tabular}{@{}lrr@{}}
-\toprule
- & cos\,$\theta$ & err (R$_E$) \\
-\midrule
-5\,min & 0.98 & 0.59 \\
-10\,min & 0.96 & 1.19 \\
-20\,min & 0.88 & 3.27 \\
-60\,min & 0.69 & 8.73 \\
-\bottomrule
-\end{tabular}
-
-\vspace{6pt}
-\normalsize
-\textbf{Speed ratio} (Sina/FO) $\approx$ 0.83:
-\begin{itemize}
-\item Bounce-averaged drift systematically slower than full orbit
-\item Low-K ($<$30\,keV): ExB dominated, good match
-\item High-K ($>$100\,keV): gc drift dominates, $\sim$20\% slower in Sina
-\end{itemize}
-
-\vspace{4pt}
-\textit{(See video attachments)}
+Speed ratio $\approx$\,0.83 (Sina systematically slower due to bounce-averaging)
 \end{column}
 \end{columns}
 \end{frame}
@@ -176,7 +141,7 @@ Code: \texttt{backtrac/rcm\_backtrac/} (git)\\
 \begin{columns}[T]
 \begin{column}{0.50\textwidth}
 \footnotesize
-\textbf{Origin classification} (ever-in-bubble criterion):\\
+\textbf{Origin classification} (ever-in-bubble during 4\,h trace):\\
 $\Delta B_z > 15$\,nT, midnight MLT 21--03, $x<0$, $r>6$\,R$_E$
 
 \vspace{4pt}
@@ -216,82 +181,31 @@ Energy & FO bubble & Sina bubble \\
 \item Low-energy particles ($<$30\,keV) have highest bubble fraction in both methods --- ExB convection efficiently transports them through bubbles
 \item High-energy ($>$120\,keV) bubble fraction converges ($\sim$6\%) --- these particles drift azimuthally too fast to be captured by bubbles
 \end{itemize}
-
-\vspace{4pt}
-\normalsize
-\textbf{FO is more trustworthy}: complete Lorentz force, includes gc drift and inductive E in $\mathbf{E}=-\mathbf{V}\times\mathbf{B}$
 \end{column}
 \end{columns}
 \end{frame}
 
-% ============ RCM domain ============
-\begin{frame}{RCM Domain Structure in MAGE}
+% ============ Video ============
+\begin{frame}{Video: FO vs Sina with $\Delta B_z$ and RCM Boundary}
 
-\begin{columns}[T]
-\begin{column}{0.50\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figures/rcm_boundary_and_jumpers.png}
-\end{column}
-\begin{column}{0.48\textwidth}
+\vspace{10pt}
+\textbf{4-hour backward trace animation}\\[4pt]
+Left: FO (equatorial projection) \quad Right: Sina $V_\text{eff}$\\[2pt]
+Background: GAMERA $\Delta B_z$ \quad Green contour: $\Delta B_z = 15$\,nT (bubble boundary)\\
+Magenta line: time-varying RCM active domain boundary\\[2pt]
+Red = bubble origin \quad Blue = non-bubble
+
+\vspace{10pt}
 \footnotesize
-\textbf{Three zones on RCM grid}:
-\begin{enumerate}
-\item \texttt{CLOSED} ($i_\text{open}=-1$): RCM active, $\eta$ advected by $V_\text{eff}$
-\item \texttt{NULL} ($i_\text{open}=0$): closed field lines but outside \texttt{bndloc} --- buffer zone, VM valid but $\eta$ not pushed
-\item \texttt{OPEN} ($i_\text{open}=+1$): open field lines
-\end{enumerate}
+\textbf{Download video}:\\[2pt]
+\url{https://drive.google.com/drive/folders/backtrac}\\[2pt]
+\texttt{fo\_vs\_veff\_bubble15nt\_midnight.mp4}
 
-\vspace{4pt}
-\textbf{Boundary (\texttt{bndloc})} determined by:
-\begin{itemize}
-\item Open/closed from GAMERA field line trace
-\item Smoothed in longitude ($\sim$1\,hr MLT)
-\item ``Only shrink'' constraint $\to$ dayside compression pulls entire boundary earthward
-\end{itemize}
+\vspace{10pt}
+\normalsize
+\textit{(Play video during presentation)}
 
-\vspace{4pt}
-Nightside: $\sim$10--15\,R$_E$\\
-Dayside: $\sim$5--6\,R$_E$ (storm compression)\\
-Time-varying (updated each coupling step)
-\end{column}
-\end{columns}
-\end{frame}
-
-% ============ Discussion ============
-\begin{frame}{Discussion and Next Steps}
-
-\begin{columns}[T]
-\begin{column}{0.50\textwidth}
-\textbf{Summary}:
-\begin{itemize}
-\item FO backward trace: 30\% bubble origin
-\item Sina $V_\text{eff}$: 16\% bubble (slower drift $\to$ fewer reach tail)
-\item Both agree bubbles concentrate in 10--60\,keV range
-\item Drift decomposition validates FO: ExB+gc explains 92\% of equatorial drift
-\item Boris pusher machine-precision reversible with fixed $\Delta t$
-\end{itemize}
-
-\vspace{4pt}
-\textbf{Sina code adaptation}:
-\begin{itemize}
-\item MAGE \texttt{colat} in radians (not degrees)
-\item $\lambda = 1000 K / V_M$ (positive for H$^+$)
-\item Codex audit: found k2/k3/k4 colat bug
-\end{itemize}
-\end{column}
-\begin{column}{0.48\textwidth}
-\textbf{Next steps}:
-\begin{itemize}
-\item Scale to 10k particles (FO + Sina)
-\item Full Sciola criteria: $\Delta B_\tau$ + $V_r$ at GAMERA equatorial plane
-\item Energy-weighted (enthalpy flux) bubble fraction
-\item Compare with Sciola ($\geq$50\%) and Yang ($\sim$60\%)
-\item October 2013 higher-resolution run (Shanshan)
-\item Investigate pre-existing RC population
-\item Use RCM $\eta$ weights for proper pressure contribution
-\end{itemize}
-\end{column}
-\end{columns}
 \end{frame}
 
 \end{document}
