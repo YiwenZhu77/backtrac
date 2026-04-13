@@ -6,6 +6,18 @@ Uses the RCM effective potential V_eff = V + lambda * V_M for bounce-averaged dr
 
 > **Status**: Pilot study using the St. Patrick's Day 2013 GAMERA-RCM simulation (sp13_075, S. Bao).
 
+## Pilot Data
+
+Download the pilot dataset to skip the conversion step and run directly:
+
+| File | Size | Link |
+|------|------|------|
+| `sp13_075_rcm_mage.h5` | ~1.5 GB | [Google Drive](https://drive.google.com/open?id=10OcF9w-pN-ixWu2BB4dhRoczIclr7yDC) |
+| `sina_1k_traj.npy` | ~4 MB | [Google Drive](https://drive.google.com/open?id=1zxrYT1rnTwU94nrnstlEux_e2agmKtd8) |
+| `sp13_1k_indices.npy` | ~8 KB | [Google Drive](https://drive.google.com/open?id=1daEIbxki6POZnoREXVS5SY9vPVx6eWsN) |
+
+Place files in a `data/` directory, then update paths in `configs/sp13_075.yaml`.
+
 ## Install
 
 ```bash
