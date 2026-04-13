@@ -66,7 +66,8 @@ def main():
     f_out.create_dataset('J', data=J_all)
     for k, v in fields.items():
         f_out.create_dataset(k, data=v)
-    f_out.create_dataset('PVG', data=np.zeros(total_size))
+    # Note: PVG not included — backtracker only needs V, VM, COLAT, ALOCT, XMIN, YMIN.
+    # For pressure analysis, compute P from EETA and VM in msphere.rcm.h5 directly.
 
     f_out.attrs['source'] = args.rcm_h5
     f_out.attrs['step_range'] = args.steps
