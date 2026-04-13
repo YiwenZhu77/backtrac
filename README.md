@@ -49,6 +49,15 @@ python scripts/analyze.py configs/sp13_075.yaml results/traj.npy \
     --meta results/traj_meta.npy
 ```
 
+### Step 4 (optional): Generate video
+
+```bash
+python scripts/make_video.py configs/sp13_075.yaml \
+    results/traj.npy results/traj_class.npz -o results/video.mp4
+```
+
+Requires GAMERA simulation directory for dBz background (set `gamera_dir` in config).
+
 ## Configuration
 
 Edit `configs/sp13_075.yaml` for your simulation:
