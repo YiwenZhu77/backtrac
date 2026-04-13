@@ -15,3 +15,6 @@ __pycache__/
 repl_out/
 frames*/
 BT_postprocess_out/
+rcm_backtrac/
+*.tpInit
+*.pptx

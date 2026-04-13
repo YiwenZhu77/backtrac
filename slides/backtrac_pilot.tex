@@ -44,12 +44,12 @@
 \begin{frame}{Motivation and Method}
 
 \begin{columns}[T]
-\begin{column}{0.52\textwidth}
-\textbf{Question}: What fraction of RC H$^+$ comes from bubbles?
+\begin{column}{0.48\textwidth}
+\textbf{Question}: What fraction of ring current H$^+$ originates from plasma sheet bubbles?
 
-\vspace{4pt}
+\vspace{6pt}
 \footnotesize
-\begin{tabular}{@{}p{2.0cm}p{4.2cm}@{}}
+\begin{tabular}{@{}p{1.8cm}p{3.8cm}@{}}
 \toprule
 \textbf{Study} & \textbf{Finding} \\
 \midrule
@@ -60,77 +60,36 @@ Yang 2015 & $\sim$60\% pressure from bubbles \\
 
 \vspace{6pt}
 \normalsize
-\textbf{Two approaches compared}:
+\textbf{Two approaches}:
 \begin{enumerate}
-\item CHIMP full-orbit (FO) backward trace in GAMERA fields ($\mathbf{E}=-\mathbf{V}\times\mathbf{B}$, Boris pusher)
-\item Sina's RCM backtracker ($V_\text{eff} = \Phi + \lambda V_M$, bounce-averaged drift)
+\item \textbf{FO}: CHIMP full-orbit backward trace\\
+{\footnotesize Boris pusher, $\mathbf{E}=-\mathbf{V}\times\mathbf{B}$ from GAMERA}
+\item \textbf{Sina's}: RCM backtracker\\
+{\footnotesize $V_\text{eff} = \Phi + \lambda V_M$, bounce-averaged drift}
 \end{enumerate}
 \end{column}
-\begin{column}{0.45\textwidth}
+\begin{column}{0.50\textwidth}
 \footnotesize
 \textbf{Pilot setup}:
-\begin{itemize}
+\begin{itemize}\setlength\itemsep{1pt}
 \item GAMERA-RCM (sp13\_075), 17 March 2013
-\item 1{,}000 H$^+$, 10--200\,keV
-\item Uniform in $r_\text{eq}=4.2$--6.6\,R$_E$
+\item 1{,}000 H$^+$, 10--200\,keV, $r_\text{eq}=4.2$--6.6\,R$_E$
 \item Backward 4\,h: 10:00$\to$06:00\,UT
-\item FO: fixed $\Delta t=0.01$\,s, $x_\text{eq}/y_\text{eq}$ from field line trace
-\item Sina: $V_\text{eff}$ drift on $(I,J)$ grid, RK4 with 10 substeps/min
-\end{itemize}
-\vspace{2pt}
-\textbf{Bubble criteria}:\\
-$\Delta B_z > 15$\,nT on GAMERA eq.\ plane,\\
-midnight sector (MLT 21--03),\\
-$x<0$, $r>6$\,R$_E$
-\end{column}
-\end{columns}
-\end{frame}
-
-% ============ Sina method ============
-\begin{frame}{Sina's RCM Backtracker}
-
-\begin{columns}[T]
-\begin{column}{0.50\textwidth}
-\textbf{RCM drift formulation}:
-\begin{itemize}
-\item Effective potential: $V_\text{eff} = V + \lambda \cdot V_M$
-\item $V$: electrostatic potential from REMIX (Vasyliunas eq.)
-\item $V_M = (\text{bVol})^{-2/3}$: magnetic drift potential (from flux tube volume)
-\item $\lambda$: adiabatic invariant, fixed per particle
-\item Energy: $K\,[\text{keV}] = |\lambda| \cdot V_M / 1000$
+\item FO: fixed $\Delta t=0.01$\,s, equatorial projection via field line trace
+\item Sina: $V_\text{eff}$ drift on $(I,J)$ ionospheric grid
 \end{itemize}
 
 \vspace{4pt}
-\textbf{Drift velocity} on ionospheric $(I,J)$ grid:
-\[
-\frac{dI}{dt} = \frac{1}{\text{fac}}\frac{\partial V_\text{eff}}{\partial J}, \qquad
-\frac{dJ}{dt} = -\frac{1}{\text{fac}}\frac{\partial V_\text{eff}}{\partial I}
-\]
-where $\text{fac} = r_i^2 |B_r| \sin\theta \, \frac{d\phi}{dJ}\frac{d\theta}{dI}$ (Jacobian)
-\end{column}
-\begin{column}{0.48\textwidth}
-\textbf{Inductive E field}:
+\textbf{Bubble identification}:
 
-The electrostatic potential $V$ alone does not contain $-\partial\mathbf{A}/\partial t$. However, the mapping $(I,J) \to (x_\text{eq}, y_\text{eq})$ via $X_\text{MIN}(I,J,t)$ changes each timestep because $\mathbf{B}$ changes. This evolution implicitly captures the inductive E field effect.
-
-\vspace{6pt}
-\textbf{Validation vs FO}:
+A particle is \textit{bubble origin} if it \textbf{ever} passes through a region satisfying:
 
 \vspace{2pt}
-\footnotesize
-\begin{tabular}{@{}lrr@{}}
-\toprule
- & $\cos\theta$ & err (R$_E$) \\
-\midrule
-5\,min & 0.98 & 0.6 \\
-10\,min & 0.96 & 1.2 \\
-20\,min & 0.88 & 3.3 \\
-\bottomrule
+\begin{tabular}{@{}ll@{}}
+$\Delta B_z > 15$\,nT & (dipolarization) \\
+MLT 21--03 & (midnight sector) \\
+$x < 0$, $r > 6$\,R$_E$ & (nightside, not inner RC) \\
 \end{tabular}
-\normalsize
-
-\vspace{4pt}
-Speed ratio $\approx$\,0.83 (Sina systematically slower due to bounce-averaging)
 \end{column}
 \end{columns}
 \end{frame}
@@ -139,10 +98,9 @@ Speed ratio $\approx$\,0.83 (Sina systematically slower due to bounce-averaging)
 \begin{frame}{Results: Bubble Contribution to Ring Current}
 
 \begin{columns}[T]
-\begin{column}{0.50\textwidth}
+\begin{column}{0.48\textwidth}
 \footnotesize
-\textbf{Origin classification} (ever-in-bubble during 4\,h trace):\\
-$\Delta B_z > 15$\,nT, midnight MLT 21--03, $x<0$, $r>6$\,R$_E$
+\textbf{Origin classification}:
 
 \vspace{4pt}
 \begin{tabular}{@{}lrr@{}}
@@ -156,11 +114,9 @@ Convection & 56\% & 15\% \\
 \end{tabular}
 
 \vspace{6pt}
-\normalsize
 \textbf{By energy}:
 
 \vspace{2pt}
-\footnotesize
 \begin{tabular}{@{}lrr@{}}
 \toprule
 Energy & FO bubble & Sina bubble \\
@@ -172,40 +128,50 @@ Energy & FO bubble & Sina bubble \\
 \bottomrule
 \end{tabular}
 \end{column}
-\begin{column}{0.48\textwidth}
+\begin{column}{0.50\textwidth}
 \footnotesize
 \textbf{Key findings}:
-\begin{itemize}
-\item FO sees \textbf{more bubbles} (30\% vs 16\%) because full-orbit gc drift carries particles through bubble channels faster
-\item Sina has \textbf{more pre-existing} (70\% vs 15\%) because bounce-averaged drift is slower $\to$ particles don't escape RC in 4\,h
-\item Low-energy particles ($<$30\,keV) have highest bubble fraction in both methods --- ExB convection efficiently transports them through bubbles
-\item High-energy ($>$120\,keV) bubble fraction converges ($\sim$6\%) --- these particles drift azimuthally too fast to be captured by bubbles
+\begin{itemize}\setlength\itemsep{2pt}
+\item FO sees more bubbles (30\% vs 16\%): full-orbit grad-curv drift carries particles through bubble channels faster than bounce-averaged drift
+\item Sina has more pre-existing (70\% vs 15\%): slower drift means particles don't escape RC in 4\,h
+\item Low-energy ($<$30\,keV): highest bubble fraction --- ExB convection efficiently transports through bubbles
+\item High-energy ($>$120\,keV): bubble fraction converges ($\sim$6\%) --- fast azimuthal drift outruns bubbles
+\item FO direction agrees with Sina at $\cos\theta = 0.98$ (5\,min); speed ratio $\approx 0.83$
 \end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
 
-% ============ Video ============
-\begin{frame}{Video: FO vs Sina with $\Delta B_z$ and RCM Boundary}
+% ============ Video snapshot ============
+\begin{frame}{Backward Trace Animation: FO vs Sina}
 
+\begin{columns}[T]
+\begin{column}{0.65\textwidth}
 \centering
-\vspace{10pt}
-\textbf{4-hour backward trace animation}\\[4pt]
-Left: FO (equatorial projection) \quad Right: Sina $V_\text{eff}$\\[2pt]
-Background: GAMERA $\Delta B_z$ \quad Green contour: $\Delta B_z = 15$\,nT (bubble boundary)\\
-Magenta line: time-varying RCM active domain boundary\\[2pt]
-Red = bubble origin \quad Blue = non-bubble
-
-\vspace{10pt}
+\includegraphics[width=\textwidth]{figures/video_snapshot.png}
+\end{column}
+\begin{column}{0.33\textwidth}
 \footnotesize
-\textbf{Download video}:\\[2pt]
-\url{https://drive.google.com/drive/folders/backtrac}\\[2pt]
-\texttt{fo\_vs\_veff\_bubble15nt\_midnight.mp4}
+\textbf{Snapshot at 9:15\,UT} (51\,min backward)
 
-\vspace{10pt}
-\normalsize
-\textit{(Play video during presentation)}
+\vspace{4pt}
+Left panel: \textbf{FO} (equatorial projection)\\
+Right panel: \textbf{Sina} $V_\text{eff}$
 
+\vspace{4pt}
+Background: GAMERA equatorial $\Delta B_z$\\
+{\color{green!60!black}\textbf{Green contour}}: $\Delta B_z = 15$\,nT (bubble boundary)
+
+\vspace{4pt}
+\textcolor{red}{\textbf{Red}}: bubble origin\\
+\textcolor{blue}{\textbf{Blue}}: non-bubble
+
+\vspace{8pt}
+\textbf{Full video}:\\
+\footnotesize
+\url{https://drive.google.com/open?id=1Z8Q_Kyhrn-HKtZlTpkUKNOBWsatA0Zm1}
+\end{column}
+\end{columns}
 \end{frame}
 
 \end{document}

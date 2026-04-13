@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!-- Pilot backward trace: 100 H+ from RC at t=36000s (10:00 UT)
+     Backward 2h to t=28800s (08:00 UT), covering main RC buildup period
+     Using sp13_075 GAMERA-RCM St. Patrick's Day 2013 storm fields
+     Fixed timestep for exact reversibility -->
+<Kaiju>
+    <Chimp>
+        <sim runid="sp13_pilot"/>
+        <time T0="36000.0" dt="0.01" tFin="28800.0"/>
+        <restart doRes="F"/>
+        <fields ebfile="msphere" isMPI="T" grType="LFM" doPureB0="F" doSmoothE="T" zeroR="2.0" SmoothR="3.5" nSmooth="3" doMHD="F"/>
+        <parallel Ri="4" Rj="4" Rk="1"/>
+        <pusher epsht="0.05" imeth="FO" MinK="1e-3" recAdb="T" doBackward="T" doFixedDt="T"/>
+        <tps Np="100" species="Hp"/>
+        <units uid="EARTH"/>
+        <init file="/glade/work/yizhu/backtrac/pilot/sp13_pilot.tpInit" format="phaseSpace"/>
+        <output doEQProj="F" dtOut="30.0" tsOut="1" timer="F"/>
+        <domain dtype="LFM" gtype="LFM" rgap="2.0" rmin="1.02"/>
+        <tracer epsds="0.5"/>
+        <stream doStream="F"/>
+    </Chimp>
+</Kaiju>
