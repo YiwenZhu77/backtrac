@@ -68,12 +68,6 @@ def main():
         'BMIN': 'rcmbmin',
     }
 
-    # Constants for pressure computation
-    RE_m = 6.37e6
-    ev = 1.6022e-19
-    nt = 1e-9
-    pressure_factor = (2.0 / 3.0) * ev / RE_m * nt
-
     for ci, step in enumerate(steps):
         s = f_rcm[f'Step#{step}']
         idx = ci * chunk_size
@@ -82,28 +76,25 @@ def main():
         for out_key, rcm_key in rcm_to_field.items():
             fields[out_key][idx:idx + chunk_size] = s[rcm_key][:].flatten()
 
-        # Compute PVG = P * bVol^(5/3)
-        vm = s['rcmvm'][:]
-        eeta = s['rcmeeta'][:]  # (kcsize, j_max, i_max)
-
-        # Total pressure: P = sum_k pf * |alamc_k| * eeta_k * vm^2.5
-        vm_safe = np.where(vm > 0, vm, 0)
-        P = np.zeros((j_max, i_max))
-        for k in range(kcsize):
-            P += pressure_factor * abs(alamc[k]) * eeta[k] * vm_safe ** 2.5
-
-        # bVol from mhdrcm (359x180 → pad to 361x180)
+        # PVG = P * bVol^(5/3) using P and bVol from mhdrcm directly
         if f_mhd is not None and f'Step#{step}' in f_mhd:
-            bvol = f_mhd[f'Step#{step}']['bVol'][:]
+            s_mhd = f_mhd[f'Step#{step}']
+            P = s_mhd['P'][:]        # nPa (359 x i_max)
+            bvol = s_mhd['bVol'][:]  # RE^3/nT (359 x i_max)
+
+            # Pad from 359 to j_max (361) rows
+            P_pad = np.zeros((j_max, i_max))
+            P_pad[1:P.shape[0]+1, :] = P
+            P_pad[0, :] = P[0, :]; P_pad[-1, :] = P[-1, :]
+
             bvol_pad = np.zeros((j_max, i_max))
             bvol_pad[1:bvol.shape[0]+1, :] = bvol
-            bvol_pad[0, :] = bvol[0, :]
-            bvol_pad[-1, :] = bvol[-1, :]
+            bvol_pad[0, :] = bvol[0, :]; bvol_pad[-1, :] = bvol[-1, :]
+
             bvol_safe = np.where(bvol_pad > 0, bvol_pad, 0)
-            PVG = P * bvol_safe ** (5.0 / 3.0)
+            PVG = P_pad * bvol_safe ** (5.0 / 3.0)
         else:
-            # Fallback: PVG ~ P / vm^2.5 * (1/vm)^(5/3) ... approximate
-            PVG = P  # just store pressure if no bVol
+            PVG = np.zeros((j_max, i_max))
 
         fields['PVG'][idx:idx + chunk_size] = PVG.flatten()
 

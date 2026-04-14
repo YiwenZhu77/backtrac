@@ -1,0 +1,23 @@
+#!/bin/bash
+#PBS -N rcmbound_vid
+#PBS -A P28100045
+#PBS -q casper
+#PBS -l select=1:ncpus=16:mem=64GB
+#PBS -l walltime=02:00:00
+#PBS -j oe
+#PBS -o /glade/derecho/scratch/yizhu/backtrac_pilot/rcmbound_vid.log
+
+source ~/.claude/scripts/conda-init.sh py3.10
+cd /glade/work/yizhu/backtrac/pilot
+
+echo "Starting..."
+date
+python3 -u make_rcmbound_video.py
+
+# Encode
+ffmpeg -y -framerate 12 -i rcmbound_frames/frame_%04d.png \
+  -vcodec libx264 -crf 24 -preset fast -pix_fmt yuv420p -movflags +faststart \
+  -vf "scale=1600:-2" /tmp/fo_sina_rcmbound.mp4
+
+echo "STATUS=$?"
+date
