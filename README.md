@@ -8,16 +8,16 @@ Uses the RCM effective potential V_eff = V + lambda * V_M for bounce-averaged dr
 
 ## Pilot Data
 
-Pilot data is on NCAR Derecho/Casper (accessible to group members):
+Pilot data are stored on a shared institutional HPC system for authorized project members. A portable directory layout is shown below; replace the root with the corresponding local path:
 
 ```
-/glade/derecho/scratch/yizhu/backtrac_pilot/
+/path/to/backtrac_pilot/
   sp13_075_rcm_mage.h5      # Converted RCM fields (V, VM, COLAT, ALOCT, XMIN, YMIN)
   sina_1k_traj.npy           # Pre-computed trajectories (241 × 1000 × 2)
   sp13_1k_indices.npy        # 1000-particle subset indices
 
 MAGE simulation (S. Bao):
-  /glade/derecho/scratch/sbao/sp13_075/
+  /path/to/simulation/sp13_075/
 ```
 
 Update paths in `configs/sp13_075.yaml` before running.

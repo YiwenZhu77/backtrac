@@ -2,8 +2,8 @@
 """Video: FO vs Sina with bndloc boundary only (no buffer line)."""
 
 import sys, os
-sys.path.insert(0, '/glade/work/yizhu/OpOF/kaipy-private')
-os.chdir('/glade/derecho/scratch/sbao/sp13_075')
+sys.path.insert(0, '/path/to/kaipy-private')
+os.chdir('/path/to/simulation/sp13_075')
 
 import numpy as np
 import h5py
@@ -15,14 +15,14 @@ from scipy.ndimage import median_filter
 from scipy.interpolate import LinearNDInterpolator
 import kaipy.gamera.magsphere as msph
 
-FIGDIR = '/glade/work/yizhu/backtrac/pilot/rcmbound_frames'
+FIGDIR = '/path/to/pilot/rcmbound_frames'
 os.makedirs(FIGDIR, exist_ok=True)
 NCPU = 16
 DBZ_THRESH = 15.0
 RC_R = 8.0
 
 print('Loading GAMERA...')
-gam = msph.GamsphPipe('/glade/derecho/scratch/sbao/sp13_075', 'msphere', doFast=True)
+gam = msph.GamsphPipe('/path/to/simulation/sp13_075', 'msphere', doFast=True)
 print('Pre-reading dBz...')
 dBz_cache = {}
 for t in range(241):
@@ -31,7 +31,7 @@ for t in range(241):
     dBz_cache[t] = (gam.DelBz(gs), gam.xxi.copy(), gam.yyi.copy())
 
 print('Loading bndloc boundaries...')
-f_rcm = h5py.File('/glade/derecho/scratch/sbao/sp13_075/msphere.rcm.h5', 'r')
+f_rcm = h5py.File('/path/to/simulation/sp13_075/msphere.rcm.h5', 'r')
 bnd_xy = {}
 for step in range(360, 601):
     s = f_rcm[f'Step#{step}']
@@ -46,7 +46,7 @@ for step in range(360, 601):
 f_rcm.close()
 
 print('Loading trajectories...')
-f = h5py.File('/glade/derecho/scratch/yizhu/backtrac_pilot/sp13_eqproj.000001.h5part', 'r')
+f = h5py.File('/path/to/pilot-data/sp13_eqproj.000001.h5part', 'r')
 steps = sorted([k for k in f.keys() if k.startswith('Step#')], key=lambda s: int(s.split('#')[1]))
 xeq = np.array([f[s]['xeq'][:] for s in steps])
 yeq = np.array([f[s]['yeq'][:] for s in steps])
@@ -55,7 +55,7 @@ K0 = f[steps[0]]['K'][:]
 f.close()
 xeq[isIn<0.5] = np.nan; yeq[isIn<0.5] = np.nan
 
-res_rw = np.load('/glade/derecho/scratch/yizhu/backtrac_pilot/sina_1k_traj.npy')
+res_rw = np.load('/path/to/pilot-data/sina_1k_traj.npy')
 Nt = min(241, xeq.shape[0], res_rw.shape[0])
 
 # Classify (same as before)

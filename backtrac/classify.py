@@ -77,7 +77,7 @@ def load_gamera_dbz(gamera_dir: str, step: int):
     """
     import sys
     # Try common kaipy paths
-    for kp in ['/glade/work/yizhu/OpOF/kaipy-private', './kaipy-private']:
+    for kp in ['/path/to/kaipy-private', './kaipy-private']:
         if kp not in sys.path:
             sys.path.insert(0, kp)
 

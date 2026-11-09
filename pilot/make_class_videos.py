@@ -2,8 +2,8 @@
 """Generate 6 videos: FO and Sina, each with bubble/pre-existing/other shown individually."""
 
 import sys, os
-sys.path.insert(0, '/glade/work/yizhu/OpOF/kaipy-private')
-os.chdir('/glade/derecho/scratch/sbao/sp13_075')
+sys.path.insert(0, '/path/to/kaipy-private')
+os.chdir('/path/to/simulation/sp13_075')
 
 import numpy as np
 import h5py
@@ -15,7 +15,7 @@ from scipy.interpolate import LinearNDInterpolator
 from scipy.ndimage import median_filter
 import kaipy.gamera.magsphere as msph
 
-OUTDIR = '/glade/work/yizhu/backtrac/pilot/class_videos'
+OUTDIR = '/path/to/pilot/class_videos'
 os.makedirs(OUTDIR, exist_ok=True)
 NCPU = 16
 DBZ_THRESH = 15.0
@@ -23,7 +23,7 @@ RC_R = 8.0
 
 # ============ Load GAMERA dBz ============
 print('Loading GAMERA...')
-gam = msph.GamsphPipe('/glade/derecho/scratch/sbao/sp13_075', 'msphere', doFast=True)
+gam = msph.GamsphPipe('/path/to/simulation/sp13_075', 'msphere', doFast=True)
 print('Pre-reading dBz...')
 dBz_cache = {}
 for t in range(241):
@@ -34,7 +34,7 @@ print(f'  {len(dBz_cache)} slices')
 
 # ============ Load trajectories ============
 print('Loading FO...')
-f = h5py.File('/glade/derecho/scratch/yizhu/backtrac_pilot/sp13_eqproj.000001.h5part', 'r')
+f = h5py.File('/path/to/pilot-data/sp13_eqproj.000001.h5part', 'r')
 steps = sorted([k for k in f.keys() if k.startswith('Step#')], key=lambda s: int(s.split('#')[1]))
 Nt = len(steps)
 xeq = np.array([f[s]['xeq'][:] for s in steps])
@@ -45,7 +45,7 @@ f.close()
 xeq[isIn < 0.5] = np.nan; yeq[isIn < 0.5] = np.nan
 
 print('Loading Sina...')
-res_rw = np.load('/glade/derecho/scratch/yizhu/backtrac_pilot/sina_1k_traj.npy')
+res_rw = np.load('/path/to/pilot-data/sina_1k_traj.npy')
 Nt = min(241, xeq.shape[0], res_rw.shape[0])
 
 # ============ Classify ============

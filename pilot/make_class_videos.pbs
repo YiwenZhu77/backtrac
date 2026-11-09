@@ -1,14 +1,15 @@
 #!/bin/bash
 #PBS -N class_videos
-#PBS -A P28100045
-#PBS -q casper
+#PBS -A YOUR_PROJECT
+#PBS -q YOUR_QUEUE
 #PBS -l select=1:ncpus=16:mem=64GB
 #PBS -l walltime=02:00:00
 #PBS -j oe
-#PBS -o /glade/derecho/scratch/yizhu/backtrac_pilot/class_videos.log
+#PBS -o /path/to/pilot-data/class_videos.log
 
-source ~/.claude/scripts/conda-init.sh py3.10
-cd /glade/work/yizhu/backtrac/pilot
+module load conda
+conda activate base
+cd "$PBS_O_WORKDIR"
 
 echo "Starting class video generation..."
 date

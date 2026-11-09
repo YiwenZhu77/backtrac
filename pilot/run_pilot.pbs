@@ -1,18 +1,18 @@
 #!/bin/bash
 #PBS -N sp13_pilot
-#PBS -A P28100045
-#PBS -q develop
+#PBS -A YOUR_PROJECT
+#PBS -q YOUR_QUEUE
 #PBS -l select=1:ncpus=128:mpiprocs=16
 #PBS -l walltime=01:00:00
-#PBS -o /glade/derecho/scratch/yizhu/backtrac_pilot/sp13_pilot3.out
-#PBS -e /glade/derecho/scratch/yizhu/backtrac_pilot/sp13_pilot3.err
+#PBS -o /path/to/pilot-data/sp13_pilot3.out
+#PBS -e /path/to/pilot-data/sp13_pilot3.err
 #PBS -j oe
 
 module purge
-module load ncarenv/23.06 craype/2.7.20 intel/2023.0.0 ncarcompilers/1.0.0 cray-mpich/8.1.25 hdf5/1.12.2
+# Load the site-specific compiler, MPI, and HDF5 modules for your installation.
 
-PUSHX=/glade/work/yizhu/OpOF/kaiju-private/build.backtrac/bin/push.x
-cd /glade/derecho/scratch/yizhu/backtrac_pilot
+PUSHX=/path/to/kaiju-private/build.backtrac/bin/push.x
+cd /path/to/pilot-data
 
 rm -f sp13_pilot.000001.h5part
 

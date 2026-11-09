@@ -2,8 +2,8 @@
 """Video showing particles that leave RC then come back. Multithreaded."""
 
 import sys, os
-sys.path.insert(0, '/glade/work/yizhu/OpOF/kaipy-private')
-os.chdir('/glade/derecho/scratch/sbao/sp13_075')
+sys.path.insert(0, '/path/to/kaipy-private')
+os.chdir('/path/to/simulation/sp13_075')
 
 import numpy as np
 import matplotlib
@@ -12,14 +12,14 @@ import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor
 import kaipy.gamera.magsphere as msph
 
-FIGDIR = '/glade/work/yizhu/backtrac/pilot/comeback_frames'
+FIGDIR = '/path/to/pilot/comeback_frames'
 os.makedirs(FIGDIR, exist_ok=True)
 RC_R = 6.6
 NCPU = 16
 
 # Load
 print('Loading GAMERA...')
-gam = msph.GamsphPipe('/glade/derecho/scratch/sbao/sp13_075', 'msphere', doFast=True)
+gam = msph.GamsphPipe('/path/to/simulation/sp13_075', 'msphere', doFast=True)
 
 print('Pre-reading dBz...')
 dBz_cache = {}
@@ -29,7 +29,7 @@ for t in range(241):
     dBz_cache[t] = (gam.DelBz(gs), gam.xxi.copy(), gam.yyi.copy())
 
 print('Loading trajectories...')
-res = np.load('/glade/derecho/scratch/yizhu/backtrac_pilot/sina_1k_traj.npy')
+res = np.load('/path/to/pilot-data/sina_1k_traj.npy')
 Nt = min(241, res.shape[0])
 Np = res.shape[1]
 
